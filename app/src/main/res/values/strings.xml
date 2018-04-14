@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Youtube Downloader</string>
+    <string name="no_connection">Check your internet connection and try again!</string>
+    <string name="could_not_proceed">Could not proceed with this request!</string>
+    <string name="file_saved">Download finished!</string>
+    <string name="file_not_saved">Could not save file!</string>
+    <string name="permission_required">You need to approve the required permission in order to continue.</string>
+    <string name="download_started">Download started&#8230;</string>
+    <string name="thumbnail_url">https://img.youtube.com/vi/%1s/default.jpg</string>
+    <string name="invalid_link">Invalid youtube link.</string>
+    <string name="downloading_file">Downloading %.2f/%.2f MB </string>
+</resources>
