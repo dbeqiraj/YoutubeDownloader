@@ -103,6 +103,7 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
     public void onVideoInfoDownloaded(Video video) {
         video.setVidTitle(video.getVidTitle()
                 .replaceAll("&quot;", "_")
+                .replaceAll("&#039;", "'")
                 .replaceAll("/", "_")
                 .replaceAll("\\\\", "_")
                 .replaceAll("&amp;", "&")
