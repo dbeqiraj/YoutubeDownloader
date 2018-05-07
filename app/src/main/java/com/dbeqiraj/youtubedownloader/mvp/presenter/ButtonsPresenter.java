@@ -45,6 +45,8 @@ public class ButtonsPresenter extends BasePresenter<DownloadView> implements Obs
             getView().onVideoInfoDownloaded(html);
         } catch (Exception e) {
             e.printStackTrace();
+            getView().onGeneralError();
+            getView().onDismissNotification();
         }
     }
 
