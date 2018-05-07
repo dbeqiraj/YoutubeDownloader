@@ -1,6 +1,7 @@
 package com.dbeqiraj.youtubedownloader.modules.download;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Intent;
@@ -8,17 +9,20 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.webkit.DownloadListener;
+import android.webkit.WebChromeClient;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dbeqiraj.youtubedownloader.R;
 import com.dbeqiraj.youtubedownloader.base.BaseActivity;
-import com.dbeqiraj.youtubedownloader.di.components.DaggerVideoComponent;
-import com.dbeqiraj.youtubedownloader.di.module.VideoModule;
+import com.dbeqiraj.youtubedownloader.di.components.DaggerButtonsComponent;
+import com.dbeqiraj.youtubedownloader.di.module.ButtonsModule;
 import com.dbeqiraj.youtubedownloader.modules.download.service.DownloadService;
-import com.dbeqiraj.youtubedownloader.mvp.model.Video;
-import com.dbeqiraj.youtubedownloader.mvp.presenter.VideoPresenter;
+import com.dbeqiraj.youtubedownloader.mvp.presenter.ButtonsPresenter;
 import com.dbeqiraj.youtubedownloader.mvp.view.DownloadView;
 import com.dbeqiraj.youtubedownloader.utilities.Utils;
 import com.facebook.drawee.backends.pipeline.Fresco;
@@ -39,9 +43,10 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
 
     @BindView(R.id.loading) protected SimpleDraweeView loading;
     @BindView(R.id.downloading) protected TextView downloading;
+    @BindView(R.id.response) protected WebView response;
 
     @Inject
-    protected VideoPresenter videoPresenter;
+    protected ButtonsPresenter buttonsPresenter;
 
     private NotificationManager notificationManager;
 
@@ -52,9 +57,9 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
 
     @Override
     protected void resolveDaggerDependency() {
-        DaggerVideoComponent.builder()
+        DaggerButtonsComponent.builder()
                 .applicationComponent(getApplicationComponent())
-                .videoModule(new VideoModule(this))
+                .buttonsModule(new ButtonsModule(this))
                 .build().inject(this);
     }
 
@@ -67,6 +72,8 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
                 .setImageRequest(ImageRequestBuilder.newBuilderWithResourceId(R.drawable.cube).build())
                 .setAutoPlayAnimations(true)
                 .build());
+
+        prepareResponse();
 
         List<String> permissions = new ArrayList<>();
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
@@ -81,6 +88,36 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
         }
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
+    private void prepareResponse() {
+        response.setWebChromeClient(new WebChromeClient());
+        response.setWebViewClient(new WebViewClient());
+        response.getSettings().setJavaScriptEnabled(true);
+        response.setDownloadListener(new DownloadListener() {
+            @Override
+            public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
+
+                String title = contentDisposition.substring(contentDisposition.indexOf("\"") + 1, contentDisposition.lastIndexOf("\""));
+                title = title.replaceAll(" - \\[youtube-mp3.info\\].mp3", "");
+                title = title
+                        .replaceAll("&quot;", "_")
+                        .replaceAll("&#039;", "'")
+                        .replaceAll("/", "_")
+                        .replaceAll("\\\\", "_")
+                        .replaceAll("\"", "_")
+                        .replaceAll("&amp;", "&");
+
+
+                Intent intent = new Intent(getApplicationContext(), DownloadService.class);
+                intent.putExtra("url", url);
+                intent.putExtra("title", title);
+                startService(intent);
+                finish();
+                System.exit(0);
+            }
+        });
+    }
+
     private void getVideo() {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
@@ -89,7 +126,7 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
                 int index = link.lastIndexOf("/") + 1;
                 if ( index > -1 ) {
                     String id = link.substring(index);
-                    videoPresenter.getVideo(id);
+                    buttonsPresenter.getVideo(id);
                 } else {
                     onShowToast(getString(R.string.invalid_link));
                 }
@@ -99,22 +136,18 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
         }
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
-    public void onVideoInfoDownloaded(Video video) {
-        video.setVidTitle(video.getVidTitle()
-                .replaceAll("&quot;", "_")
-                .replaceAll("&#039;", "'")
-                .replaceAll("/", "_")
-                .replaceAll("\\\\", "_")
-                .replaceAll("&amp;", "&")
-        );
-
-        Intent intent = new Intent(this, DownloadService.class);
-        intent.putExtra("video", video);
-        startService(intent);
-
-        finish();
-        System.exit(0);
+    public void onVideoInfoDownloaded(String html) {
+        if ( html.contains("invalid") ) {
+            onDismissNotification();
+            getVideo();
+        } else {
+            int index = html.indexOf("<a");
+            html = html.substring(0, index) + " <a id = 'maxbitrate' " + html.substring(index + 2, html.length());
+            html = html + "<script type='text/javascript'>location.href = document.getElementById('maxbitrate').href;</script>";
+            response.loadData(html, "text/html; charset=utf-8", "UTF-8");
+        }
     }
 
     @Override

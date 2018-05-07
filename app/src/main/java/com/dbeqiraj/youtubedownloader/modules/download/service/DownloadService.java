@@ -14,7 +14,6 @@ import com.dbeqiraj.youtubedownloader.application.App;
 import com.dbeqiraj.youtubedownloader.di.components.DaggerDownloadServiceComponent;
 import com.dbeqiraj.youtubedownloader.di.module.DownloadServiceModule;
 import com.dbeqiraj.youtubedownloader.mvp.model.Download;
-import com.dbeqiraj.youtubedownloader.mvp.model.Video;
 import com.dbeqiraj.youtubedownloader.mvp.presenter.DownloadPresenter;
 import com.dbeqiraj.youtubedownloader.mvp.view.NotificationView;
 import com.dbeqiraj.youtubedownloader.utilities.Utils;
@@ -46,7 +45,8 @@ public class DownloadService extends IntentService implements NotificationView {
     @Inject
     protected DownloadPresenter downloadPresenter;
 
-    private Video video;
+    private String url;
+    private String title;
 
     private NotificationCompat.Builder notificationBuilder;
     private NotificationManager notificationManager;
@@ -70,16 +70,17 @@ public class DownloadService extends IntentService implements NotificationView {
     protected void onHandleIntent(@Nullable Intent intent) {
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        video = (Video) intent.getSerializableExtra("video");
+        url = intent.getStringExtra("url");
+        title = intent.getStringExtra("title");
 
         notificationBuilder = new NotificationCompat.Builder(this, "")
                 .setSmallIcon(R.drawable.ic_download)
-                .setContentTitle(video.getVidTitle())
+                .setContentTitle(title)
                 .setContentText(getString(R.string.download_started))
                 .setAutoCancel(true);
         notificationManager.notify(0, notificationBuilder.build());
 
-        initDownload(video.getVidInfo().get("0").getDloadUrl());
+        initDownload(url);
 
     }
 
@@ -98,7 +99,7 @@ public class DownloadService extends IntentService implements NotificationView {
             }
 
             if ( root.exists() ) {
-                File file = new File(rootDir + File.separator + video.getVidTitle() + ".mp3");
+                File file = new File(rootDir + File.separator + title + ".mp3");
 
                 InputStream inputStream = null;
                 OutputStream outputStream = null;
@@ -142,7 +143,7 @@ public class DownloadService extends IntentService implements NotificationView {
                     outputStream.flush();
 
                     // Music file
-                    Utils.isMusic(getApplicationContext(), file, video.getVidTitle());
+                    Utils.isMusic(getApplicationContext(), file, title);
 
                     return true;
                 } catch (IOException e) {
@@ -172,7 +173,6 @@ public class DownloadService extends IntentService implements NotificationView {
 
         notificationBuilder.setProgress(100,download.getProgress(),false);
         notificationBuilder.setContentText(String.format(getString(R.string.downloading_file), download.getCurrentFileSize(), totalFileSize));
-        //notificationBuilder.setContentText("Downloading file "+ download.getCurrentFileSize() +"/"+totalFileSize +" MB");
         notificationManager.notify(0, notificationBuilder.build());
     }
 
