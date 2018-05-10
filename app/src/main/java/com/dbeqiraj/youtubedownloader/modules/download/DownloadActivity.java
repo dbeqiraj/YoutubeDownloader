@@ -30,6 +30,7 @@ import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,8 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
     protected ButtonsPresenter buttonsPresenter;
 
     private NotificationManager notificationManager;
+
+    private String title;
 
     @Override
     protected int getContentView() {
@@ -97,8 +100,6 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
             @Override
             public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
 
-                String title = contentDisposition.substring(contentDisposition.indexOf("\"") + 1, contentDisposition.lastIndexOf("\""));
-                title = title.replaceAll(" - \\[youtube-mp3.info\\].mp3", "");
                 title = title
                         .replaceAll("&quot;", "_")
                         .replaceAll("&#039;", "'")
@@ -112,6 +113,7 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
                 intent.putExtra("url", url);
                 intent.putExtra("title", title);
                 startService(intent);
+                onShowToast(getString(R.string.download_started));
                 finish();
                 System.exit(0);
             }
@@ -121,6 +123,7 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
     private void getVideo() {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
+            title = StringUtils.substringBetween(extras.getString(Intent.EXTRA_SUBJECT), "Watch \"", "\" on YouTube");
             String link = extras.getString(Intent.EXTRA_TEXT);
             if (link != null) {
                 int index = link.lastIndexOf("/") + 1;
@@ -141,7 +144,9 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
     public void onVideoInfoDownloaded(String html) {
         if ( html.contains("invalid") ) {
             onDismissNotification();
-            getVideo();
+            onGeneralError();
+            finish();
+            System.exit(0);
         } else {
             int index = html.indexOf("<a");
             html = html.substring(0, index) + " <a id = 'maxbitrate' " + html.substring(index + 2, html.length());
