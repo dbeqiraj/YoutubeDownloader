@@ -3,12 +3,14 @@ package com.dbeqiraj.youtubedownloader.modules.download;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
 import android.webkit.DownloadListener;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -41,6 +43,8 @@ import butterknife.BindView;
 
 
 public class DownloadActivity extends BaseActivity implements DownloadView {
+
+    private static final String NOTIF_CHANNEL_ID = "channel_download_activity";
 
     @BindView(R.id.loading) protected SimpleDraweeView loading;
     @BindView(R.id.downloading) protected TextView downloading;
@@ -115,7 +119,8 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
                 startService(intent);
                 onShowToast(getString(R.string.download_started));
                 finish();
-                System.exit(0);
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
+                    System.exit(0);
             }
         });
     }
@@ -146,7 +151,8 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
             onDismissNotification();
             onGeneralError();
             finish();
-            System.exit(0);
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
+                System.exit(0);
         } else {
             int index = html.indexOf("<a");
             html = html.substring(0, index) + " <a id = 'maxbitrate' " + html.substring(index + 2, html.length());
@@ -165,19 +171,24 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
             RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notification);
 
-            Notification notification = new Notification.Builder(this)
+            NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, "")
                     .setContent(contentView)
                     .setSmallIcon(R.mipmap.ic_file_download_white_24dp)
-                    .build();
+                    .setAutoCancel(true);
 
             notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-            notification.flags |= Notification.FLAG_AUTO_CANCEL;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel mChannel = new NotificationChannel(NOTIF_CHANNEL_ID, getString(R.string.app_name), NotificationManager.IMPORTANCE_HIGH);
+                notificationManager.createNotificationChannel(mChannel);
+                notificationBuilder.setChannelId(NOTIF_CHANNEL_ID);
+            }
 
             if (notificationManager != null) {
-                notificationManager.notify(0, notification);
+                Notification notification = notificationBuilder.build();
                 notification.defaults |= Notification.DEFAULT_SOUND;
                 notification.defaults |= Notification.DEFAULT_VIBRATE;
+                notificationManager.notify(0, notification);
             }
 
         } else {

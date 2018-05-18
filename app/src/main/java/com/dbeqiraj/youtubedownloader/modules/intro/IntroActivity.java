@@ -16,6 +16,5 @@ public class IntroActivity extends BaseActivity {
     @Override
     protected void onViewReady(Bundle savedInstanceState, Intent intent) {
         super.onViewReady(savedInstanceState, intent);
-
     }
 }
