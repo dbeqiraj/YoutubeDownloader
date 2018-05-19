@@ -2,12 +2,14 @@ package com.dbeqiraj.youtubedownloader.modules.download;
 
 import android.Manifest;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +28,7 @@ import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +40,8 @@ import butterknife.BindView;
 
 public class DownloadActivity extends BaseActivity implements DownloadView {
 
+    private static final String NOTIF_CHANNEL_ID = "channel_download_activity";
+
     @BindView(R.id.loading) protected SimpleDraweeView loading;
     @BindView(R.id.downloading) protected TextView downloading;
 
@@ -44,6 +49,8 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
     protected VideoPresenter videoPresenter;
 
     private NotificationManager notificationManager;
+
+    private String title;
 
     @Override
     protected int getContentView() {
@@ -84,6 +91,7 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
     private void getVideo() {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
+            title = StringUtils.substringBetween(extras.getString(Intent.EXTRA_SUBJECT), "Watch \"", "\" on YouTube");
             String link = extras.getString(Intent.EXTRA_TEXT);
             if (link != null) {
                 int index = link.lastIndexOf("/") + 1;
@@ -101,20 +109,23 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
 
     @Override
     public void onVideoInfoDownloaded(Video video) {
-        video.setVidTitle(video.getVidTitle()
+        title = title
                 .replaceAll("&quot;", "_")
                 .replaceAll("&#039;", "'")
                 .replaceAll("/", "_")
                 .replaceAll("\\\\", "_")
-                .replaceAll("&amp;", "&")
-        );
+                .replaceAll("\"", "_")
+                .replaceAll("&amp;", "&");
+
+        video.setVidTitle(title);
 
         Intent intent = new Intent(this, DownloadService.class);
         intent.putExtra("video", video);
         startService(intent);
 
         finish();
-        System.exit(0);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
+            System.exit(0);
     }
 
     @Override
@@ -127,19 +138,24 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
             RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notification);
 
-            Notification notification = new Notification.Builder(this)
+            NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, "")
                     .setContent(contentView)
                     .setSmallIcon(R.mipmap.ic_file_download_white_24dp)
-                    .build();
+                    .setAutoCancel(true);
 
             notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-            notification.flags |= Notification.FLAG_AUTO_CANCEL;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel mChannel = new NotificationChannel(NOTIF_CHANNEL_ID, getString(R.string.app_name), NotificationManager.IMPORTANCE_HIGH);
+                notificationManager.createNotificationChannel(mChannel);
+                notificationBuilder.setChannelId(NOTIF_CHANNEL_ID);
+            }
 
             if (notificationManager != null) {
-                notificationManager.notify(0, notification);
+                Notification notification = notificationBuilder.build();
                 notification.defaults |= Notification.DEFAULT_SOUND;
                 notification.defaults |= Notification.DEFAULT_VIBRATE;
+                notificationManager.notify(0, notification);
             }
 
         } else {
