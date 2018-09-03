@@ -33,7 +33,7 @@ public class App extends Application {
     private void initializeApplicationComponent() {
         mApplicationComponent = DaggerApplicationComponent
                 .builder()
-                .applicationModule(new ApplicationModule(this, "https://baixaryoutube.net"))
+                .applicationModule(new ApplicationModule(this, "http://michaelbelgium.me"))
                 .build();
     }
 

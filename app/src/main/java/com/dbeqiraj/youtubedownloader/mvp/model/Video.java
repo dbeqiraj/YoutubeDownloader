@@ -9,33 +9,40 @@ import java.util.HashMap;
 
 public class Video implements Serializable {
 
-    private HashMap<String, VidInfo> vidInfo;
-    private String vidTitle;
-    private String vidID;
+    private Boolean error;
+    private String title;
+    private Long duration;
+    private String file;
 
-    public HashMap<String, VidInfo> getVidInfo() {
-        return vidInfo;
+    public Boolean getError() {
+        return error;
     }
 
-    public void setVidInfo(HashMap<String, VidInfo> vidInfo) {
-        this.vidInfo = vidInfo;
+    public void setError(Boolean error) {
+        this.error = error;
     }
 
-    public String getVidTitle() {
-        return vidTitle;
+    public String getTitle() {
+        return title;
     }
 
-    public void setVidTitle(String vidTitle) {
-        this.vidTitle = vidTitle;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public String getVidID() {
-        return vidID;
+    public Long getDuration() {
+        return duration;
     }
 
-    public void setVidID(String vidID) {
-        this.vidID = vidID;
+    public void setDuration(Long duration) {
+        this.duration = duration;
     }
 
+    public String getFile() {
+        return file;
+    }
 
+    public void setFile(String file) {
+        this.file = file;
+    }
 }

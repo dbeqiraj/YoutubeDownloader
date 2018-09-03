@@ -28,9 +28,9 @@ public class VideoPresenter extends BasePresenter<DownloadView> implements Obser
     public VideoPresenter() {
     }
 
-    public void getVideo(String vidID) {
+    public void getVideo(String youtubelink) {
         getView().onStartVidInfDownload();
-        Observable<Video> cakesResponseObservable = mApiService.getVideo(vidID);
+        Observable<Video> cakesResponseObservable = mApiService.getVideo(youtubelink);
         subscribe(cakesResponseObservable, this);
     }
 

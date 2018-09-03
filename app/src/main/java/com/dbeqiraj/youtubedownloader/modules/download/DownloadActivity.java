@@ -94,13 +94,7 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
             title = StringUtils.substringBetween(extras.getString(Intent.EXTRA_SUBJECT), "Watch \"", "\" on YouTube");
             String link = extras.getString(Intent.EXTRA_TEXT);
             if (link != null) {
-                int index = link.lastIndexOf("/") + 1;
-                if ( index > -1 ) {
-                    String id = link.substring(index);
-                    videoPresenter.getVideo(id);
-                } else {
-                    onShowToast(getString(R.string.invalid_link));
-                }
+                videoPresenter.getVideo(link);
             } else {
                 onShowToast(getString(R.string.invalid_link));
             }
@@ -117,7 +111,7 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
                 .replaceAll("\"", "_")
                 .replaceAll("&amp;", "&");
 
-        video.setVidTitle(title);
+        video.setTitle(title);
 
         Intent intent = new Intent(this, DownloadService.class);
         intent.putExtra("video", video);

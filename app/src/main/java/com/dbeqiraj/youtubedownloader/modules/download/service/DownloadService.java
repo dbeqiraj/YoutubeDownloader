@@ -78,7 +78,7 @@ public class DownloadService extends IntentService implements NotificationView {
 
         notificationBuilder = new NotificationCompat.Builder(this, "")
                 .setSmallIcon(R.drawable.ic_download)
-                .setContentTitle(video.getVidTitle())
+                .setContentTitle(video.getTitle())
                 .setContentText(getString(R.string.download_started))
                 .setAutoCancel(true);
 
@@ -90,7 +90,7 @@ public class DownloadService extends IntentService implements NotificationView {
 
         notificationManager.notify(0, notificationBuilder.build());
 
-        initDownload(video.getVidInfo().get("0").getDloadUrl());
+        initDownload(video.getFile());
 
     }
 
@@ -109,7 +109,7 @@ public class DownloadService extends IntentService implements NotificationView {
             }
 
             if ( root.exists() ) {
-                File file = new File(rootDir + File.separator + video.getVidTitle() + ".mp3");
+                File file = new File(rootDir + File.separator + video.getTitle() + ".mp3");
 
                 InputStream inputStream = null;
                 OutputStream outputStream = null;
@@ -153,7 +153,7 @@ public class DownloadService extends IntentService implements NotificationView {
                     outputStream.flush();
 
                     // Music file
-                    Utils.isMusic(getApplicationContext(), file, video.getVidTitle());
+                    Utils.isMusic(getApplicationContext(), file, video.getTitle());
 
                     return true;
                 } catch (IOException e) {
