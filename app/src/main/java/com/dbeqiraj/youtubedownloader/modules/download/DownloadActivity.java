@@ -45,6 +45,7 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
 
     @BindView(R.id.loading) protected SimpleDraweeView loading;
     @BindView(R.id.downloading) protected TextView downloading;
+    @BindView(R.id.warning) protected TextView warning;
 
     @Inject
     protected VideoPresenter videoPresenter;
@@ -75,6 +76,7 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
     }
 
     private void setupViewComponents() {
+        warning.setText(Html.fromHtml(getString(R.string.warning)));
         downloading.setTypeface(Utils.fontQuicksandBold(this));
         loading.setController(Fresco.newDraweeControllerBuilder()
                 .setImageRequest(ImageRequestBuilder.newBuilderWithResourceId(R.drawable.cube).build())

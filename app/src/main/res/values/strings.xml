@@ -9,7 +9,7 @@
     <string name="thumbnail_url">https://img.youtube.com/vi/%1s/default.jpg</string>
     <string name="invalid_link">Invalid youtube link.</string>
     <string name="downloading_file">Downloading %.2f/%.2f MB </string>
-    <string name="warning"><b>Warning!</b>\nMake sure to have the latest version of the App.
-        The service might go down for some time, and fixes will be available in the latest version.
+    <string name="warning"><![CDATA[<font color=#9F6000 ><b>Warning!</b></font><br/>Make sure to have the latest version of the App.
+        The service might go down for some time, and fixes will be available in the latest version.]]>
     </string>
 </resources>
