@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
+import android.text.Html;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -69,12 +70,19 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
     protected void onViewReady(Bundle savedInstanceState, Intent intent) {
         super.onViewReady(savedInstanceState, intent);
 
+        setupViewComponents();
+        checkPermissions();
+    }
+
+    private void setupViewComponents() {
         downloading.setTypeface(Utils.fontQuicksandBold(this));
         loading.setController(Fresco.newDraweeControllerBuilder()
                 .setImageRequest(ImageRequestBuilder.newBuilderWithResourceId(R.drawable.cube).build())
                 .setAutoPlayAnimations(true)
                 .build());
+    }
 
+    private void checkPermissions(){
         List<String> permissions = new ArrayList<>();
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
             if (!Utils.permissionIsGranted(this, Manifest.permission.WRITE_EXTERNAL_STORAGE))
