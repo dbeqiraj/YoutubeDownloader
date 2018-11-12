@@ -43,9 +43,12 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
 
     private static final String NOTIF_CHANNEL_ID = "channel_download_activity";
 
-    @BindView(R.id.loading) protected SimpleDraweeView loading;
-    @BindView(R.id.downloading) protected TextView downloading;
-    @BindView(R.id.warning) protected TextView warning;
+    @BindView(R.id.loading)
+    protected SimpleDraweeView loading;
+    @BindView(R.id.downloading)
+    protected TextView downloading;
+    @BindView(R.id.warning)
+    protected TextView warning;
 
     @Inject
     protected VideoPresenter videoPresenter;
@@ -84,7 +87,7 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
                 .build());
     }
 
-    private void checkPermissions(){
+    private void checkPermissions() {
         List<String> permissions = new ArrayList<>();
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
             if (!Utils.permissionIsGranted(this, Manifest.permission.WRITE_EXTERNAL_STORAGE))
@@ -104,6 +107,8 @@ public class DownloadActivity extends BaseActivity implements DownloadView {
             title = StringUtils.substringBetween(extras.getString(Intent.EXTRA_SUBJECT), "Watch \"", "\" on YouTube");
             String link = extras.getString(Intent.EXTRA_TEXT);
             if (link != null) {
+                if (link.contains("https://youtu.be/"))
+                    link = link.replace("https://youtu.be/", "https://www.youtube.com/watch?v=");
                 videoPresenter.getVideo(link);
             } else {
                 onShowToast(getString(R.string.invalid_link));
