@@ -35,8 +35,7 @@
         android:layout_below="@+id/loading"
         android:layout_alignParentBottom="true"
         android:text="@string/warning"
-        android:textColor="@android:color/black"
-        android:textSize="15sp"/>
+        android:textColor="@android:color/black"/>
 
 
     <WebView
